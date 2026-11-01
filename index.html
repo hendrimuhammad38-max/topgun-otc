@@ -5,6 +5,68 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#E4EAF2">
   <title>TOP GUN OTC</title>
+  <!-- Penjaga lebar layar: sebagian peramban ponsel menyalakan mode "Situs desktop",
+       yang memaksa lebar halaman ±980px lalu mengecilkan seluruh tampilan sampai
+       sulit dibaca. Blok ini mendeteksinya, mencoba memperbaiki sendiri, dan bila
+       peramban menolak diperbaiki barulah menampilkan cara mematikannya. -->
+  <script>
+  (function () {
+    var meta = document.querySelector('meta[name=viewport]');
+    var ASLI = 'width=device-width, initial-scale=1, viewport-fit=cover';
+
+    // Benar hanya bila: perangkat sentuh, TAPI lebar halaman jauh melebihi lebar layar
+    // fisiknya. Dua tolok ukur dipakai agar tidak keliru mengenali tablet atau komputer.
+    function modeDesktop() {
+      var sentuh = (window.matchMedia && matchMedia('(pointer: coarse)').matches) ||
+                   navigator.maxTouchPoints > 0 || 'ontouchstart' in window;
+      if (!sentuh) return false;
+      var lebar = window.innerWidth || 0;
+      if (lebar < 700) return false;                       // sudah pas, tidak perlu apa-apa
+      var layar = Math.min(screen.width || 0, screen.height || 0);
+      if (layar && lebar > layar * 1.4) return true;       // lebar halaman >> lebar layar
+      var piksel = Math.round(lebar * (window.devicePixelRatio || 1));
+      return piksel > 0 && piksel <= 1400;                 // layar ponsel, bukan tablet besar
+    }
+
+    function pesan() {
+      if (document.getElementById('bannerDesktop')) return;
+      var d = document.createElement('div');
+      d.id = 'bannerDesktop';
+      d.setAttribute('role', 'alert');
+      d.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:99998;padding:14px 16px;' +
+        'background:#1E3A5F;color:#fff;font:500 15px/22px system-ui,-apple-system,sans-serif;' +
+        'box-shadow:0 6px 20px rgba(0,0,0,.3);text-align:left';
+      d.innerHTML = '<b>Tampilan mengecil?</b> Peramban Anda memakai mode <b>Situs desktop</b>.<br>' +
+        '<span style="font-weight:400">Buka menu peramban (ikon <b>&#8942;</b> atau <b>&#9776;</b>), ' +
+        'lalu hilangkan centang <b>&ldquo;Situs desktop&rdquo;</b>. Bisa juga buka tautan ini di Chrome.</span>' +
+        '<button type="button" aria-label="Tutup" style="position:absolute;right:8px;top:8px;width:32px;' +
+        'height:32px;border:0;border-radius:10px;background:rgba(255,255,255,.18);color:#fff;' +
+        'font-size:19px;line-height:1;cursor:pointer">&times;</button>';
+      d.querySelector('button').onclick = function () { d.remove(); };
+      (document.body || document.documentElement).appendChild(d);
+    }
+
+    function periksa(sisaCoba) {
+      if (!modeDesktop()) return;
+      if (sisaCoba > 0 && meta) {
+        // Sebagian peramban mau mengikuti bila meta viewport ditulis ulang setelah halaman siap.
+        meta.setAttribute('content', 'width=' + (Math.min(screen.width, screen.height) || 'device-width') + ', initial-scale=1, viewport-fit=cover');
+        setTimeout(function () {
+          if (!modeDesktop()) { meta.setAttribute('content', ASLI); return; }   // berhasil
+          meta.setAttribute('content', ASLI);
+          periksa(sisaCoba - 1);
+        }, 350);
+        return;
+      }
+      if (document.body) pesan();
+      else document.addEventListener('DOMContentLoaded', pesan);
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { periksa(1); });
+    else periksa(1);
+    window.addEventListener('orientationchange', function () { setTimeout(function () { periksa(0); }, 500); });
+  })();
+  </script>
   <!-- Penjaga pemuatan: bila JavaScript gagal berjalan, penyebabnya tampil di layar (bukan layar kosong) -->
   <script>
   (function () {
