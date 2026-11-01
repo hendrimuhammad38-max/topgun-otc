@@ -16,7 +16,7 @@
  */
 window.APP_CONFIG = {
   // ⬇️ GANTI baris ini dengan URL Web App Anda
-  GAS_URL: 'GANTI_DENGAN_URL_WEB_APP_ANDA',
+  GAS_URL: 'https://script.google.com/macros/s/AKfycbypBdFgND3hPft2ew_fuymnEQwprK2IEh_7LQhp7xTspvOsEI527RpbzbNoRID0cTK_/exec',
 
   // Batas waktu menunggu jawaban server (milidetik)
   TIMEOUT_MS: 60000,
