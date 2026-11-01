@@ -28,6 +28,18 @@
       return piksel > 0 && piksel <= 1400;                 // layar ponsel, bukan tablet besar
     }
 
+    // Tautan untuk membuka halaman yang sama di Chrome. Dikembalikan kosong bila
+    // sistemnya bukan Android/iOS, agar tidak memunculkan tombol yang tidak berguna.
+    function tautanChrome() {
+      var ua = navigator.userAgent || '';
+      var tanpaSkema = location.host + location.pathname + location.search;
+      if (/Android/i.test(ua))
+        return 'intent://' + tanpaSkema + '#Intent;scheme=https;package=com.android.chrome;' +
+               'S.browser_fallback_url=' + encodeURIComponent(location.href) + ';end';
+      if (/iPhone|iPad|iPod/i.test(ua)) return 'googlechromes://' + tanpaSkema;
+      return '';
+    }
+
     function pesan() {
       if (document.getElementById('bannerDesktop')) return;
       var d = document.createElement('div');
@@ -38,10 +50,22 @@
         'box-shadow:0 6px 20px rgba(0,0,0,.3);text-align:left';
       d.innerHTML = '<b>Tampilan mengecil?</b> Peramban Anda memakai mode <b>Situs desktop</b>.<br>' +
         '<span style="font-weight:400">Buka menu peramban (ikon <b>&#8942;</b> atau <b>&#9776;</b>), ' +
-        'lalu hilangkan centang <b>&ldquo;Situs desktop&rdquo;</b>. Bisa juga buka tautan ini di Chrome.</span>' +
+        'lalu hilangkan centang <b>&ldquo;Situs desktop&rdquo;</b>.</span>' +
         '<button type="button" aria-label="Tutup" style="position:absolute;right:8px;top:8px;width:32px;' +
         'height:32px;border:0;border-radius:10px;background:rgba(255,255,255,.18);color:#fff;' +
         'font-size:19px;line-height:1;cursor:pointer">&times;</button>';
+
+      var url = tautanChrome();
+      if (url) {
+        var a = document.createElement('a');
+        a.id = 'bukaDiChrome';
+        a.href = url;
+        a.rel = 'noopener';
+        a.textContent = 'Buka di Chrome';
+        a.style.cssText = 'display:inline-block;margin-top:10px;padding:9px 18px;border-radius:12px;' +
+          'background:#F5A623;color:#1B2433;font-weight:700;text-decoration:none';
+        d.appendChild(a);
+      }
       d.querySelector('button').onclick = function () { d.remove(); };
       (document.body || document.documentElement).appendChild(d);
     }
