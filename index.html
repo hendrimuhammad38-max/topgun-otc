@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#E4EAF2">
+  <title>TOP GUN OTC</title>
+  <!-- Penjaga pemuatan: bila JavaScript gagal berjalan, penyebabnya tampil di layar (bukan layar kosong) -->
+  <script>
+  (function () {
+    window.__otcBoot = false; var shown = false;
+    function banner(msg) {
+      if (shown) return; shown = true;
+      var d = document.createElement('div'); d.setAttribute('role', 'alert');
+      d.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:99999;padding:14px 18px;background:#BA1A1A;color:#fff;font:600 14px/20px system-ui,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.35)';
+      d.innerHTML = '<b>Aplikasi belum bisa dijalankan.</b> ' + msg + '<br><span style="font-weight:400">Periksa: berkas <code>index.html</code>, <code>css/style.css</code>, <code>js/config.js</code>, <code>js/api.js</code>, <code>js/app.js</code> ada di repositori; lalu muat ulang (Ctrl+F5). Tekan F12 → Console untuk detail.</span>';
+      (document.body || document.documentElement).appendChild(d);
+    }
+    window.addEventListener('error', function (e) { if (!window.__otcBoot) banner(String(e.message || 'Terjadi error JavaScript') + (e.lineno ? ' (baris ' + e.lineno + ')' : '')); });
+    window.addEventListener('load', function () {
+      setTimeout(function () {
+        if (!window.__otcBoot) banner('File JavaScript tidak termuat.');
+        else if (typeof bootstrap === 'undefined' || typeof Chart === 'undefined') banner('Pustaka dari internet (Bootstrap/Chart.js) tidak termuat. Periksa koneksi internet atau blokir situs jsdelivr/cdnjs.');
+      }, 3500);
+    });
+  })();
+  </script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" onerror="this.onerror=null;this.href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css'">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" onerror="this.onerror=null;this.href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css'">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Loading awal -->
+<div id="loadingOverlay" class="loading-overlay" role="status" aria-live="polite">
+  <div class="ring"></div>
+  <p class="mt-3 mb-0 caption">Memuat aplikasi…</p>
+</div>
+
+<!-- ════════ VIEW 1: AUTENTIKASI ════════ -->
+<div id="viewAuth" class="hidden">
+  <div class="auth-bg" aria-hidden="true">
+    <span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span>
+    <i class="bi bi-gear-wide-connected gear g1"></i><i class="bi bi-gear gear g2"></i>
+    <i class="bi bi-truck-flatbed truck"></i>
+  </div>
+  <div class="auth-wrap">
+    <div class="auth-box">
+      <div class="auth-banner" id="authBanner"><div class="fallback"><i class="bi bi-shield-check"></i> <span class="appNameText">TOP GUN OTC</span></div></div>
+      <div class="neu-card">
+        <div class="brand mb-3">
+          <div class="brand-logo brandLogo"><i class="bi bi-shield-check"></i></div>
+          <div><div class="brand-name appNameText">TOP GUN OTC</div><div class="caption">Operator Training Center</div></div>
+          <button class="btn-neu icon sm ms-auto" type="button" onclick="toggleTheme()" aria-label="Ganti tema terang/gelap"><i class="bi bi-moon-stars"></i></button>
+        </div>
+        <div class="seg mb-3" role="tablist">
+          <button type="button" class="active" id="tabPeserta" onclick="switchAuthTab('peserta')"><i class="bi bi-person-badge"></i> Peserta</button>
+          <button type="button" id="tabAdmin" onclick="switchAuthTab('admin')"><i class="bi bi-shield-lock"></i> Admin / Instruktur</button>
+        </div>
+
+        <form id="formPeserta" class="reveal-group" onsubmit="handleLoginPeserta(event)" novalidate>
+          <div class="mb-3">
+            <label class="field-label" for="pId">ID Operator / Badge <span class="req">*</span></label>
+            <div class="input-icon"><i class="bi bi-person-vcard"></i><input class="neu-input" id="pId" autocomplete="username" autocapitalize="characters" placeholder="Contoh: OPR-8821" required></div>
+          </div>
+          <div class="mb-3">
+            <label class="field-label" for="pNama">Nama Lengkap <span class="req">*</span></label>
+            <div class="input-icon"><i class="bi bi-person"></i><input class="neu-input" id="pNama" autocomplete="name" placeholder="Sesuai data peserta terdaftar" required></div>
+            <div class="hint">Nama dipakai sebagai verifikasi kedua bersama ID.</div>
+          </div>
+          <div class="neu-inset p-3 mb-3 d-flex gap-2 align-items-start" style="font-size:12px;color:var(--muted)">
+            <i class="bi bi-info-circle" style="color:var(--accent)"></i>
+            <span>Hanya peserta terdaftar yang dijadwalkan hari ini dapat mengakses ujian. Hubungi pengawas jika otorisasi terkendala.</span>
+          </div>
+          <div id="errPeserta" class="field-error mb-2 hidden" role="alert"></div>
+          <button class="btn-neu primary block" type="submit" id="btnLoginPeserta"><i class="bi bi-box-arrow-in-right"></i> Masuk Ujian</button>
+        </form>
+
+        <form id="formAdmin" class="hidden reveal-group" onsubmit="handleLoginAdmin(event)" novalidate>
+          <div class="mb-3">
+            <label class="field-label" for="aUser">Username <span class="req">*</span></label>
+            <div class="input-icon"><i class="bi bi-person-gear"></i><input class="neu-input" id="aUser" autocomplete="username" autocapitalize="none" required></div>
+          </div>
+          <div class="mb-3">
+            <label class="field-label" for="aPass">Password <span class="req">*</span></label>
+            <div class="input-icon"><i class="bi bi-key"></i><input class="neu-input" id="aPass" type="password" autocomplete="current-password" required></div>
+          </div>
+          <div id="errAdmin" class="field-error mb-2 hidden" role="alert"></div>
+          <button class="btn-neu primary block" type="submit" id="btnLoginAdmin"><i class="bi bi-box-arrow-in-right"></i> Masuk</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ VIEW 2: PESERTA ════════ -->
+<div id="viewPeserta" class="hidden">
+  <header class="topbar">
+    <div class="brand"><div class="brand-logo brandLogo"><i class="bi bi-shield-check"></i></div><div class="brand-name appNameText hide-sm">TOP GUN OTC</div></div>
+    <div class="d-flex align-items-center gap-2">
+      <div class="user-chip"><i class="bi bi-person-circle fs-5"></i><div><b id="pcNama">-</b><span class="caption" id="pcId">-</span></div></div>
+      <button class="btn-neu icon sm" type="button" onclick="toggleTheme()" aria-label="Ganti tema"><i class="bi bi-moon-stars"></i></button>
+      <button class="btn-neu sm danger" type="button" id="btnKeluarPeserta" onclick="confirmLogout()"><i class="bi bi-box-arrow-right"></i><span class="hide-sm">Keluar</span></button>
+    </div>
+  </header>
+
+  <!-- Pilih kategori -->
+  <section id="p-kategori" class="content-section">
+    <div class="page">
+      <div class="caption mb-1" style="color:var(--warn-text);font-weight:700;letter-spacing:.06em">LANGKAH 1 DARI 3 · PILIH KATEGORI</div>
+      <h1>Pilih Kategori Tes Alat Berat</h1>
+      <p class="text-muted-2 mt-1 mb-4">Pilihan tidak dapat diganti setelah tes dimulai. Pastikan kategori sesuai dengan spesialisasi alat berat Anda.</p>
+      <div class="cat-grid" id="catGrid"></div>
+      <div class="neu-card mt-4 summary-bar" id="catSummary">
+        <div class="d-flex align-items-center gap-3"><span class="sum-ico" id="catSummaryIco"><i class="bi bi-grid"></i></span><div><div class="caption">KATEGORI DIPILIH</div><div class="font-head fw-bold" style="font-size:20px" id="catSummaryName">Belum dipilih</div><div class="text-muted-2" id="catSummaryInfo">Pilih salah satu kategori di atas.</div></div></div>
+        <button class="btn-neu primary" type="button" id="btnLanjutKategori" disabled onclick="goLobi()">Lanjut ke Ruang Tunggu <i class="bi bi-arrow-right"></i></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Lobi -->
+  <section id="p-lobi" class="content-section">
+    <div class="page" style="max-width:860px">
+      <div class="caption mb-1" style="color:var(--warn-text);font-weight:700;letter-spacing:.06em">LANGKAH 2 DARI 3 · RUANG TUNGGU</div>
+      <h1 class="mb-3">Ruang Tunggu Ujian</h1>
+      <div class="neu-card mb-3"><div class="kv" id="lobiProfil"></div></div>
+      <div class="info-tiles mb-3" id="lobiTiles"></div>
+      <div class="neu-card rules mb-3">
+        <h3 class="mb-2"><i class="bi bi-exclamation-triangle" style="color:var(--accent)"></i> Aturan Ujian</h3>
+        <ul class="mb-0 ps-3">
+          <li>Dilarang berpindah tab, meminimalkan jendela, atau membuka aplikasi lain selama tes.</li>
+          <li>Tes berjalan dalam <b>mode layar penuh</b>. Keluar dari layar penuh dihitung sebagai pelanggaran.</li>
+          <li>Klik kanan, salin, tempel, dan cetak dinonaktifkan.</li>
+          <li>Jawaban tersimpan otomatis. Tes terkirim otomatis saat waktu habis atau batas pelanggaran tercapai.</li>
+          <li>Soal pilihan ganda dinilai otomatis; soal esai dinilai manual oleh admin.</li>
+        </ul>
+      </div>
+      <label class="check-row mb-3" for="chkAturan"><input type="checkbox" class="neu-check" id="chkAturan" onchange="document.getElementById('btnMulaiTes').disabled=!this.checked"><span>Saya telah membaca dan menyetujui aturan ujian.</span></label>
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn-neu" type="button" onclick="showPesertaSection('kategori')"><i class="bi bi-arrow-left"></i> Ganti Kategori</button>
+        <button class="btn-neu accent" type="button" id="btnMulaiTes" disabled onclick="startExam()"><i class="bi bi-play-fill"></i> <span id="btnMulaiLabel">Mulai Tes</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Ujian -->
+  <section id="p-ujian" class="content-section exam-lock">
+    <div class="page">
+      <div class="neu-card sm exam-top mb-3">
+        <div class="exam-meta">
+          <span class="pill navy" id="examKategori"><i class="bi bi-truck"></i> -</span>
+          <span class="pill neutral" id="examIntegritas"><i class="bi bi-shield-check"></i> Pelanggaran: 0/3</span>
+          <span class="pill ok hide-sm"><i class="bi bi-eye"></i> Anti-cheat aktif</span>
+        </div>
+        <div class="timer" id="examTimer" role="timer" aria-live="off"><i class="bi bi-stopwatch"></i><span id="timerText">00:00</span></div>
+      </div>
+      <div class="neu-card sm mb-3">
+        <div class="d-flex justify-content-between mb-2 flex-wrap gap-1"><b id="examProgressLabel">Soal 1 dari 1</b><span class="caption" id="examProgressSub"></span></div>
+        <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100"><div class="progress-fill" id="examProgressFill" style="width:0"></div></div>
+      </div>
+      <div class="exam-layout exam-body">
+        <div>
+          <div class="neu-card" id="qCard"></div>
+          <div class="exam-actions">
+            <button class="btn-neu" type="button" id="btnPrev" onclick="gotoQ(Exam.idx-1)"><i class="bi bi-arrow-left"></i> Sebelumnya</button>
+            <span class="savestate" id="saveState"><span class="dot"></span><span id="saveText">Tersimpan</span></span>
+            <button class="btn-neu accent" type="button" id="btnFlag" onclick="toggleFlag()"><i class="bi bi-flag"></i> <span class="hide-sm">Tandai Ragu-ragu</span></button>
+            <button class="btn-neu primary" type="button" id="btnNext" onclick="gotoQ(Exam.idx+1)">Selanjutnya <i class="bi bi-arrow-right"></i></button>
+          </div>
+        </div>
+        <aside class="neu-card nav-panel" id="navPanel" aria-label="Navigasi soal">
+          <h3>Navigasi Soal <span class="pill navy" id="navTotal">0 butir</span></h3>
+          <div class="d-flex justify-content-between mt-2"><b class="caption">Grup A: Pilihan Ganda</b><span class="caption" id="navCountPG"></span></div>
+          <div class="nav-grid" id="navGridPG"></div>
+          <div id="navEsaiWrap">
+            <div class="d-flex justify-content-between"><b class="caption">Grup B: Esai</b><span class="caption" id="navCountEsai"></span></div>
+            <div class="nav-grid" id="navGridEsai"></div>
+          </div>
+          <div class="legend mb-3">
+            <span><i style="background:var(--primary)"></i> Terjawab</span><span><i style="border:2px dashed var(--accent)"></i> Esai belum</span>
+            <span><i style="background:var(--surface);box-shadow:var(--raised-sm)"></i> Belum dijawab</span><span><i style="border:2px solid var(--accent)"></i> Sedang dikerjakan</span>
+          </div>
+          <button class="btn-neu danger block" type="button" id="btnFinish" onclick="askFinish()"><i class="bi bi-check2-all"></i> Selesaikan Tes</button>
+        </aside>
+      </div>
+    </div>
+    <button class="btn-neu primary drawer-btn" type="button" id="btnDrawer" onclick="toggleDrawer()"><i class="bi bi-grid-3x3-gap"></i> Daftar Soal</button>
+  </section>
+
+  <!-- Selesai -->
+  <section id="p-selesai" class="content-section">
+    <div class="page" style="max-width:560px;margin-top:6vh">
+      <div class="neu-card text-center" id="doneCard"></div>
+    </div>
+  </section>
+</div>
+
+<!-- ════════ VIEW 3: PANEL ADMIN / INSTRUKTUR ════════ -->
+<div id="viewPanel" class="hidden">
+  <nav class="sidebar" id="sidebar" aria-label="Menu utama">
+    <div class="sidebar-header">
+      <div class="brand-logo brandLogo"><i class="bi bi-shield-check"></i></div>
+      <div><div class="brand-name appNameText">TOP GUN OTC</div><small id="sideRole">Admin</small></div>
+    </div>
+    <ul class="side-nav" id="sideNav"></ul>
+    <div class="sidebar-footer">
+      <div class="row"><span><i class="bi bi-moon-stars"></i> Mode gelap</span>
+        <label class="neu-switch"><input type="checkbox" id="darkToggle" onchange="toggleTheme()" aria-label="Mode gelap"><span class="track"></span></label></div>
+      <button class="btn-neu block" type="button" onclick="confirmLogout()"><i class="bi bi-box-arrow-left"></i> Keluar</button>
+    </div>
+  </nav>
+  <div class="sidebar-overlay" id="sideOverlay" onclick="closeSidebar()"></div>
+
+  <div class="panel-main">
+    <header class="panel-top">
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn-neu icon sm d-lg-none" type="button" onclick="toggleSidebar()" aria-label="Buka menu"><i class="bi bi-list fs-5"></i></button>
+        <h2 id="panelTitle">Dashboard</h2>
+      </div>
+      <div class="user-chip"><i class="bi bi-person-circle fs-5"></i><div><b id="panelUserName">-</b><span class="caption" id="panelUserRole">-</span></div></div>
+    </header>
+    <main class="panel-body">
+
+      <!-- Dashboard -->
+      <section id="section-dashboard" class="content-section">
+        <div class="filter-bar">
+          <div class="fixed"><label class="field-label" for="dDari">Dari tanggal tes</label><input type="date" class="neu-input" id="dDari"></div>
+          <div class="fixed"><label class="field-label" for="dSampai">Sampai</label><input type="date" class="neu-input" id="dSampai"></div>
+          <div style="align-self:flex-end;display:flex;gap:8px"><button class="btn-neu primary" type="button" onclick="loadDashboard(true)"><i class="bi bi-funnel"></i> Terapkan</button><button class="btn-neu" type="button" onclick="resetDashFilter()">Reset</button></div>
+        </div>
+        <div id="dashBody"></div>
+      </section>
+
+      <!-- Bank Soal -->
+      <section id="section-banksoal" class="content-section">
+        <div class="page-head"><div><h1>Bank Soal</h1><p>Kelola soal lewat aplikasi, atau ketik langsung di Google Sheets (satu tab per kategori: “Soal Dump Truck”, “Soal ADT”, …) lalu klik <b>Sinkronkan</b>.</p></div>
+          <div class="d-flex gap-2 flex-wrap"><a class="btn-neu hidden" id="lnkSheetSoal" href="#" target="_blank" rel="noopener"><i class="bi bi-file-earmark-spreadsheet"></i> Buka Spreadsheet</a><button class="btn-neu" type="button" onclick="syncSpreadsheet(this)"><i class="bi bi-arrow-repeat"></i> Sinkronkan</button><button class="btn-neu" type="button" onclick="openImport('soal')"><i class="bi bi-upload"></i> Impor CSV</button><button class="btn-neu primary" type="button" onclick="openSoalForm()"><i class="bi bi-plus-lg"></i> Tambah Soal</button></div></div>
+        <div class="neu-card">
+          <div class="filter-bar">
+            <div class="grow"><label class="field-label" for="fsSearch">Cari soal</label><input class="neu-input" id="fsSearch" placeholder="Ketik kata kunci…" oninput="debounce('soal',renderSoalTable)"></div>
+            <div class="fixed"><label class="field-label" for="fsKategori">Kategori alat</label><select class="neu-select" id="fsKategori" onchange="soalPage=1;renderSoalTable()"></select></div>
+            <div class="fixed"><label class="field-label" for="fsTipe">Tipe</label><select class="neu-select" id="fsTipe" onchange="soalPage=1;renderSoalTable()"><option value="">Semua tipe</option><option>Pilihan Ganda</option><option>Esai</option></select></div>
+            <div class="fixed"><label class="field-label" for="fsStatus">Status</label><select class="neu-select" id="fsStatus" onchange="soalPage=1;renderSoalTable()"><option value="">Semua</option><option>Aktif</option><option>Nonaktif</option></select></div>
+          </div>
+          <div id="soalTable"></div><div class="pager" id="soalPager"></div>
+        </div>
+      </section>
+
+      <!-- Form Soal -->
+      <section id="section-soalform" class="content-section">
+        <div class="page-head"><div class="d-flex align-items-center gap-3"><button class="btn-neu icon" type="button" onclick="navigateTo('banksoal')" aria-label="Kembali"><i class="bi bi-arrow-left"></i></button><h1 id="soalFormTitle">Buat Soal</h1></div></div>
+        <div class="split">
+          <div class="neu-card">
+            <input type="hidden" id="sId">
+            <div class="row g-3 mb-3">
+              <div class="col-md-6"><label class="field-label" for="sKategori">Kategori alat <span class="req">*</span></label><select class="neu-select" id="sKategori" onchange="renderSoalPreview()"></select></div>
+              <div class="col-md-6"><label class="field-label">Tipe soal <span class="req">*</span></label>
+                <div class="seg"><button type="button" id="segPG" class="active" onclick="setTipe('Pilihan Ganda')">Pilihan Ganda</button><button type="button" id="segEsai" onclick="setTipe('Esai')">Esai</button></div></div>
+            </div>
+            <div class="mb-3"><label class="field-label" for="sPertanyaan">Teks pertanyaan <span class="req">*</span></label><textarea class="neu-textarea" id="sPertanyaan" maxlength="3000" oninput="renderSoalPreview()"></textarea></div>
+            <div class="mb-3"><label class="field-label">Gambar (opsional)</label>
+              <div class="dropzone" id="sDrop" tabindex="0" role="button" aria-label="Unggah gambar soal" onclick="document.getElementById('sGambarFile').click()">
+                <div id="sDropInner"><i class="bi bi-cloud-arrow-up fs-2"></i><div>Klik untuk memilih gambar (PNG/JPG/WEBP, maks 4 MB)</div></div>
+              </div>
+              <input type="file" id="sGambarFile" accept="image/png,image/jpeg,image/webp,image/gif" class="hidden" onchange="onSoalImage(this)">
+              <button class="btn-neu sm danger mt-2 hidden" type="button" id="btnHapusGambar" onclick="clearSoalImage()"><i class="bi bi-trash"></i> Hapus gambar</button>
+            </div>
+            <div id="optSection">
+              <label class="field-label">Pilihan jawaban <span class="req">*</span> <span class="hint">(klik huruf untuk menandai kunci jawaban)</span></label>
+              <div class="opt-input"><button type="button" class="letter" data-k="A" onclick="setKunci('A')" aria-label="Jadikan A kunci">A</button><input class="neu-input" id="sOpsiA" aria-label="Opsi A" oninput="renderSoalPreview()"></div>
+              <div class="opt-input"><button type="button" class="letter" data-k="B" onclick="setKunci('B')" aria-label="Jadikan B kunci">B</button><input class="neu-input" id="sOpsiB" aria-label="Opsi B" oninput="renderSoalPreview()"></div>
+              <div class="opt-input"><button type="button" class="letter" data-k="C" onclick="setKunci('C')" aria-label="Jadikan C kunci">C</button><input class="neu-input" id="sOpsiC" aria-label="Opsi C" oninput="renderSoalPreview()"></div>
+              <div class="opt-input"><button type="button" class="letter" data-k="D" onclick="setKunci('D')" aria-label="Jadikan D kunci">D</button><input class="neu-input" id="sOpsiD" aria-label="Opsi D" oninput="renderSoalPreview()"></div>
+            </div>
+            <div class="d-flex align-items-center gap-3 mt-3"><label class="neu-switch"><input type="checkbox" id="sStatus" checked aria-label="Soal aktif"><span class="track"></span></label><span>Soal aktif (dipakai dalam tes)</span></div>
+            <div id="errSoal" class="field-error mt-3 hidden" role="alert"></div>
+          </div>
+          <div class="neu-card"><div class="caption mb-2">PRATINJAU UNTUK PESERTA</div><div id="soalPreview"></div></div>
+        </div>
+        <div class="sticky-actions"><button class="btn-neu" type="button" onclick="navigateTo('banksoal')">Batal</button><button class="btn-neu primary" type="button" id="btnSimpanSoal" onclick="saveSoalForm()"><i class="bi bi-check-lg"></i> Simpan Soal</button></div>
+      </section>
+
+      <!-- Peserta -->
+      <section id="section-peserta" class="content-section">
+        <div class="page-head"><div><h1>Peserta</h1><p>Cari peserta, lihat profil dan riwayat nilai. Peserta juga bisa diketik langsung di tab “Peserta” pada Google Sheets, lalu klik <b>Sinkronkan</b>.</p></div>
+          <div class="d-flex gap-2 flex-wrap admin-only"><a class="btn-neu hidden" id="lnkSheetPeserta" href="#" target="_blank" rel="noopener"><i class="bi bi-file-earmark-spreadsheet"></i> Buka Spreadsheet</a><button class="btn-neu" type="button" onclick="syncSpreadsheet(this)"><i class="bi bi-arrow-repeat"></i> Sinkronkan</button><button class="btn-neu" type="button" onclick="openImport('peserta')"><i class="bi bi-upload"></i> Impor CSV</button><button class="btn-neu primary" type="button" onclick="openPesertaModal()"><i class="bi bi-plus-lg"></i> Tambah Peserta</button></div></div>
+        <div class="neu-card">
+          <div class="filter-bar">
+            <div class="grow"><label class="field-label" for="fpSearch">Cari nama / ID</label><input class="neu-input" id="fpSearch" placeholder="Ketik nama atau ID…" oninput="debounce('peserta',renderPesertaTable)"></div>
+            <div class="fixed"><label class="field-label" for="fpKategori">Kategori</label><select class="neu-select" id="fpKategori" onchange="pesertaPage=1;renderPesertaTable()"></select></div>
+            <div class="fixed"><label class="field-label" for="fpDept">Departemen</label><select class="neu-select" id="fpDept" onchange="pesertaPage=1;renderPesertaTable()"></select></div>
+            <div class="fixed"><label class="field-label" for="fpCrew">Crew</label><select class="neu-select" id="fpCrew" onchange="pesertaPage=1;renderPesertaTable()"></select></div>
+            <div class="fixed"><label class="field-label" for="fpTanggal">Tanggal tes</label><input type="date" class="neu-input" id="fpTanggal" onchange="pesertaPage=1;renderPesertaTable()"></div>
+          </div>
+          <div id="pesertaTable"></div><div class="pager" id="pesertaPager"></div>
+        </div>
+      </section>
+
+      <!-- Hasil -->
+      <section id="section-hasil" class="content-section">
+        <div class="page-head"><div><h1>Hasil Tes</h1><p>Rekap nilai peserta, dapat dicari, difilter, dan diekspor.</p></div>
+          <div class="d-flex gap-2"><button class="btn-neu" type="button" onclick="loadHasil(true)" aria-label="Muat ulang"><i class="bi bi-arrow-clockwise"></i></button><button class="btn-neu primary" type="button" onclick="exportHasilCSV()"><i class="bi bi-download"></i> Ekspor CSV</button></div></div>
+        <div class="row g-3 mb-3" id="hasilSummary"></div>
+        <div class="neu-card mb-3"><h3 class="mb-2">Distribusi Nilai Akhir</h3><div class="chart-box" style="height:220px"><canvas id="chartDist"></canvas></div></div>
+        <div class="neu-card">
+          <div class="filter-bar">
+            <div class="grow"><label class="field-label" for="fhSearch">Cari nama / ID</label><input class="neu-input" id="fhSearch" placeholder="Ketik nama atau ID…" oninput="debounce('hasil',renderHasilTable)"></div>
+            <div class="fixed"><label class="field-label" for="fhKategori">Kategori</label><select class="neu-select" id="fhKategori" onchange="hasilPage=1;renderHasilTable()"></select></div>
+            <div class="fixed"><label class="field-label" for="fhDept">Departemen</label><select class="neu-select" id="fhDept" onchange="hasilPage=1;renderHasilTable()"></select></div>
+            <div class="fixed"><label class="field-label" for="fhCrew">Crew</label><select class="neu-select" id="fhCrew" onchange="hasilPage=1;renderHasilTable()"></select></div>
+            <div class="fixed"><label class="field-label" for="fhAlat">Kategori alat</label><select class="neu-select" id="fhAlat" onchange="hasilPage=1;renderHasilTable()"></select></div>
+            <div class="fixed"><label class="field-label" for="fhDari">Dari tanggal</label><input type="date" class="neu-input" id="fhDari" onchange="hasilPage=1;renderHasilTable()"></div>
+            <div class="fixed"><label class="field-label" for="fhSampai">Sampai</label><input type="date" class="neu-input" id="fhSampai" onchange="hasilPage=1;renderHasilTable()"></div>
+          </div>
+          <div id="hasilTable"></div><div class="pager" id="hasilPager"></div>
+        </div>
+      </section>
+
+      <!-- Penilaian Esai: daftar -->
+      <section id="section-esai" class="content-section">
+        <div class="page-head"><div><h1>Antrean Penilaian Esai</h1><p>Nilai jawaban esai peserta. Nilai akhir muncul setelah esai ditandai selesai dinilai.</p></div>
+          <button class="btn-neu" type="button" onclick="loadHasil(true)" aria-label="Muat ulang"><i class="bi bi-arrow-clockwise"></i></button></div>
+        <div class="row g-3 mb-3" id="esaiKpi"></div>
+        <div class="neu-card">
+          <div class="filter-bar">
+            <div class="grow"><label class="field-label" for="feSearch">Cari nama / ID</label><input class="neu-input" id="feSearch" placeholder="Ketik nama atau ID…" oninput="debounce('esai',renderEsaiTable)"></div>
+            <div class="fixed"><label class="field-label" for="feAlat">Kategori alat</label><select class="neu-select" id="feAlat" onchange="esaiPage=1;renderEsaiTable()"></select></div>
+            <div class="fixed"><label class="field-label" for="feStatus">Status</label><select class="neu-select" id="feStatus" onchange="esaiPage=1;renderEsaiTable()"><option value="">Semua</option><option value="pending" selected>Belum dinilai / draf</option><option value="done">Sudah dinilai</option></select></div>
+          </div>
+          <div id="esaiTable"></div><div class="pager" id="esaiPager"></div>
+        </div>
+      </section>
+
+      <!-- Penilaian Esai: detail -->
+      <section id="section-esaidetail" class="content-section">
+        <div class="page-head"><div class="d-flex align-items-center gap-3"><button class="btn-neu icon" type="button" onclick="navigateTo('esai')" aria-label="Kembali ke antrean"><i class="bi bi-arrow-left"></i></button><div><h1>Penilaian Esai</h1><p id="edSub"></p></div></div></div>
+        <div id="edBody"></div>
+      </section>
+
+      <!-- Pengaturan -->
+      <section id="section-pengaturan" class="content-section">
+        <div class="page-head"><div><h1>Pengaturan</h1><p>Parameter tes, tampilan, dan akun pengguna.</p></div></div>
+        <div class="neu-card mb-3">
+          <h3 class="mb-3">Pengaturan Tes</h3>
+          <div class="row g-3">
+            <div class="col-md-6"><label class="field-label" for="setNama">Nama aplikasi</label><input class="neu-input" id="setNama" maxlength="60"></div>
+            <div class="col-6 col-md-3"><label class="field-label" for="setDurasi">Durasi tes (menit)</label><input type="number" class="neu-input" id="setDurasi" min="5" max="300"></div>
+            <div class="col-6 col-md-3"><label class="field-label" for="setBatas">Batas pelanggaran</label><input type="number" class="neu-input" id="setBatas" min="1" max="20"></div>
+            <div class="col-6 col-md-3"><label class="field-label" for="setPG">Jumlah soal pilihan ganda</label><input type="number" class="neu-input" id="setPG" min="0" max="100"></div>
+            <div class="col-6 col-md-3"><label class="field-label" for="setEsai">Jumlah soal esai</label><input type="number" class="neu-input" id="setEsai" min="0" max="20"></div>
+            <div class="col-6 col-md-3"><label class="field-label" for="setBobot">Bobot esai (%)</label><input type="number" class="neu-input" id="setBobot" min="0" max="100"><div class="hint">Nilai akhir = PG × (100−bobot)% + Esai × bobot%</div></div>
+            <div class="col-6 col-md-3"><label class="field-label" for="setLulus">Nilai lulus</label><input type="number" class="neu-input" id="setLulus" min="0" max="100"></div>
+          </div>
+          <div id="errSet" class="field-error mt-3 hidden" role="alert"></div>
+          <div class="mt-3"><button class="btn-neu primary" type="button" id="btnSimpanSet" onclick="savePengaturanForm()"><i class="bi bi-check-lg"></i> Simpan Pengaturan</button></div>
+        </div>
+        <div class="neu-card mb-3">
+          <h3 class="mb-3">Tampilan</h3>
+          <div class="row g-4">
+            <div class="col-md-4"><div class="field-label">Logo perusahaan</div><div class="neu-inset p-3 text-center mb-2" style="min-height:130px;display:grid;place-items:center"><img id="logoPrev" alt="Logo" class="hidden" style="max-width:120px;max-height:100px"><span id="logoEmpty" class="text-muted-2">Belum ada logo</span></div>
+              <input type="file" id="logoFile" accept="image/png,image/jpeg,image/webp" class="hidden" onchange="uploadBrandFile('logo',this)">
+              <button class="btn-neu sm" type="button" onclick="document.getElementById('logoFile').click()"><i class="bi bi-upload"></i> Ganti</button> <button class="btn-neu sm danger" type="button" onclick="removeBrand('logo')"><i class="bi bi-trash"></i> Hapus</button></div>
+            <div class="col-md-8"><div class="field-label">Banner halaman login (rasio 16:5)</div><div class="neu-inset p-2 mb-2"><div class="auth-banner" style="margin:0;box-shadow:none" id="bannerPrev"></div></div>
+              <input type="file" id="bannerFile" accept="image/png,image/jpeg,image/webp" class="hidden" onchange="uploadBrandFile('banner',this)">
+              <button class="btn-neu sm" type="button" onclick="document.getElementById('bannerFile').click()"><i class="bi bi-upload"></i> Ganti</button> <button class="btn-neu sm danger" type="button" onclick="removeBrand('banner')"><i class="bi bi-trash"></i> Hapus</button></div>
+          </div>
+        </div>
+        <div class="neu-card mb-3">
+          <h3>Thumbnail Kategori Alat Berat</h3>
+          <p class="text-muted-2 mb-3">Logo/gambar tiap kategori yang tampil pada kartu pilihan kategori peserta. Disarankan gambar persegi (PNG/JPG/WEBP, maks. 4 MB).</p>
+          <div class="thumb-grid" id="thumbGrid"></div>
+          <input type="file" id="thumbFile" accept="image/png,image/jpeg,image/webp" class="hidden" onchange="uploadThumbFile(this)">
+        </div>
+        <div class="neu-card">
+          <div class="d-flex justify-content-between align-items-center mb-3"><h3>Akun Admin &amp; Instruktur</h3><button class="btn-neu sm primary" type="button" onclick="openAkunModal()"><i class="bi bi-plus-lg"></i> Tambah Akun</button></div>
+          <div id="akunTable"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ════════ MODAL ════════ -->
+<div class="modal fade" id="mdlConfirm" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+  <div class="modal-header"><h5 class="modal-title" id="mcTitle">Konfirmasi</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button></div>
+  <div class="modal-body" id="mcBody"></div>
+  <div class="modal-footer"><button type="button" class="btn-neu" data-bs-dismiss="modal">Batal</button><button type="button" class="btn-neu primary" id="mcOk">Ya, lanjut</button></div>
+</div></div></div>
+
+<div class="modal fade" id="mdlImage" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content">
+  <div class="modal-header"><h5 class="modal-title">Pratinjau Gambar</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button></div>
+  <div class="modal-body text-center"><img id="miImg" alt="Gambar soal" style="max-width:100%;max-height:70vh;border-radius:12px"></div>
+  <div class="modal-footer"><button type="button" class="btn-neu" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i> Tutup</button><a id="miDownload" class="btn-neu primary hidden" href="#" download><i class="bi bi-download"></i> Unduh</a></div>
+</div></div></div>
+
+<div class="modal fade" id="mdlPeserta" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content">
+  <div class="modal-header"><h5 class="modal-title" id="mpTitle">Tambah Peserta</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button></div>
+  <div class="modal-body"><div class="row g-3">
+    <div class="col-md-6"><label class="field-label" for="mpId">ID <span class="req">*</span></label><input class="neu-input" id="mpId" autocapitalize="characters"></div>
+    <div class="col-md-6"><label class="field-label" for="mpNama">Nama <span class="req">*</span></label><input class="neu-input" id="mpNama"></div>
+    <div class="col-md-6"><label class="field-label" for="mpKategori">Kategori <span class="req">*</span></label><select class="neu-select" id="mpKategori"></select></div>
+    <div class="col-md-6"><label class="field-label" for="mpDept">Departemen <span class="req">*</span></label><select class="neu-select" id="mpDept"></select></div>
+    <div class="col-md-6"><label class="field-label" for="mpCrew">Crew <span class="req">*</span></label><select class="neu-select" id="mpCrew"></select></div>
+    <div class="col-md-6"><label class="field-label" for="mpTanggal">Tanggal tes <span class="req">*</span></label><input type="date" class="neu-input" id="mpTanggal"></div>
+  </div><div id="errPeserta2" class="field-error mt-3 hidden" role="alert"></div></div>
+  <div class="modal-footer"><button type="button" class="btn-neu" data-bs-dismiss="modal">Batal</button><button type="button" class="btn-neu primary" id="mpSave" onclick="savePesertaModal()">Simpan</button></div>
+</div></div></div>
+
+<div class="modal fade" id="mdlAkun" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+  <div class="modal-header"><h5 class="modal-title" id="maTitle">Tambah Akun</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button></div>
+  <div class="modal-body"><input type="hidden" id="maId"><div class="row g-3">
+    <div class="col-12"><label class="field-label" for="maUser">Username <span class="req">*</span></label><input class="neu-input" id="maUser" autocapitalize="none"></div>
+    <div class="col-12"><label class="field-label" for="maNama">Nama <span class="req">*</span></label><input class="neu-input" id="maNama"></div>
+    <div class="col-6"><label class="field-label" for="maPeran">Peran</label><select class="neu-select" id="maPeran"><option>Admin</option><option>Instruktur</option></select></div>
+    <div class="col-6"><label class="field-label" for="maStatus">Status</label><select class="neu-select" id="maStatus"><option>Aktif</option><option>Nonaktif</option></select></div>
+    <div class="col-12"><label class="field-label" for="maPass">Password <span id="maPassHint" class="hint">(min. 8 karakter)</span></label><input type="password" class="neu-input" id="maPass" autocomplete="new-password"></div>
+  </div><div id="errAkun" class="field-error mt-3 hidden" role="alert"></div></div>
+  <div class="modal-footer"><button type="button" class="btn-neu" data-bs-dismiss="modal">Batal</button><button type="button" class="btn-neu primary" id="maSave" onclick="saveAkunModal()">Simpan</button></div>
+</div></div></div>
+
+<div class="modal fade" id="mdlImport" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content">
+  <div class="modal-header"><h5 class="modal-title" id="miTitle">Impor CSV</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button></div>
+  <div class="modal-body">
+    <p class="mb-2" id="miHelp"></p>
+    <label class="field-label" for="miFile">Pilih berkas .csv</label><input type="file" class="neu-input" id="miFile" accept=".csv,text/csv" onchange="onImportFile(this)">
+    <label class="field-label mt-3" for="miText">…atau tempel isi CSV (baris pertama = header)</label>
+    <textarea class="neu-textarea" id="miText" rows="6" oninput="previewImport()" placeholder="Header,Header,…"></textarea>
+    <div id="miPreview" class="mt-3"></div>
+  </div>
+  <div class="modal-footer"><button type="button" class="btn-neu" onclick="downloadTemplate()"><i class="bi bi-file-earmark-arrow-down"></i> Unduh templat</button><button type="button" class="btn-neu" data-bs-dismiss="modal">Batal</button><button type="button" class="btn-neu primary" id="miSubmit" disabled onclick="submitImport()">Impor</button></div>
+</div></div></div>
+
+<div class="modal fade" id="mdlDetail" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable"><div class="modal-content">
+  <div class="modal-header"><h5 class="modal-title">Detail Peserta</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button></div>
+  <div class="modal-body" id="mdBody"></div>
+</div></div></div>
+
+<div class="modal fade" id="mdlViolation" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content text-center p-3">
+  <div class="mini-modal-ico" style="color:var(--accent)"><i class="bi bi-exclamation-triangle-fill"></i></div>
+  <h3 id="mvTitle">Peringatan Pelanggaran</h3>
+  <p class="mt-2 mb-1" id="mvText">Anda meninggalkan halaman tes.</p>
+  <div class="dots" id="mvDots"></div><div class="caption mb-3" id="mvCount"></div>
+  <button class="btn-neu primary block" type="button" id="mvBtn" onclick="closeViolation()">Kembali ke Tes (layar penuh)</button>
+</div></div></div>
+
+<div class="modal fade" id="mdlFinish" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+  <div class="modal-header"><h5 class="modal-title">Selesaikan Tes?</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button></div>
+  <div class="modal-body" id="mfBody"></div>
+  <div class="modal-footer"><button type="button" class="btn-neu" data-bs-dismiss="modal">Kembali ke Tes</button><button type="button" class="btn-neu primary" id="mfOk" onclick="confirmFinish()">Ya, Kirim Jawaban</button></div>
+</div></div></div>
+
+<div class="modal fade" id="mdlSync" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable"><div class="modal-content">
+  <div class="modal-header"><h5 class="modal-title"><i class="bi bi-arrow-repeat"></i> Hasil Sinkronisasi Spreadsheet</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button></div>
+  <div class="modal-body" id="syncBody"></div>
+  <div class="modal-footer"><button type="button" class="btn-neu primary" data-bs-dismiss="modal">Tutup</button></div>
+</div></div></div>
+
+<!-- Toast -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:2000">
+  <div id="appToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-header"><i class="bi bi-bell me-2" id="toastIcon"></i><strong class="me-auto" id="toastTitle">Notifikasi</strong><button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Tutup"></button></div>
+    <div class="toast-body" id="toastBody"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>window.bootstrap || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"><\/script>');</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>window.Chart || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"><\/script>');</script>
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
